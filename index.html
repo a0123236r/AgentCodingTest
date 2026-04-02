@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Singapore Tide Tracker</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(160deg, #0a1628 0%, #0d2b4e 50%, #0a3d5c 100%);
+      min-height: 100vh;
+      color: #e0f0ff;
+    }
+
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+
+    header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      color: #7dd3fc;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-top: 0.3rem;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 3rem;
+    }
+
+    /* API key setup */
+    #setup-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(125,211,252,0.2);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #setup-card h2 {
+      font-size: 1rem;
+      color: #7dd3fc;
+      margin-bottom: 0.6rem;
+    }
+
+    #setup-card p {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin-bottom: 0.8rem;
+      line-height: 1.5;
+    }
+
+    #setup-card p a {
+      color: #38bdf8;
+    }
+
+    .api-row {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+
+    #api-key-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 0.55rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid rgba(125,211,252,0.3);
+      background: rgba(0,0,0,0.3);
+      color: #e0f0ff;
+      font-size: 0.9rem;
+      outline: none;
+    }
+
+    #api-key-input:focus {
+      border-color: #38bdf8;
+    }
+
+    .btn {
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      background: #0284c7;
+      color: white;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: #0369a1; }
+    .btn:disabled { background: #334155; cursor: not-allowed; }
+
+    /* Status */
+    #status-msg {
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+      color: #f87171;
+    }
+
+    #status-msg.ok { color: #4ade80; }
+
+    /* Cards row */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(125,211,252,0.15);
+      border-radius: 14px;
+      padding: 1.2rem 1rem;
+      text-align: center;
+    }
+
+    .card .label {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #64748b;
+      margin-bottom: 0.4rem;
+    }
+
+    .card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #7dd3fc;
+      line-height: 1;
+    }
+
+    .card .sub {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      margin-top: 0.3rem;
+    }
+
+    .card.highlight {
+      border-color: rgba(125,211,252,0.4);
+      background: rgba(2,132,199,0.12);
+    }
+
+    /* Tide bar */
+    .tide-bar-wrap {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(125,211,252,0.15);
+      border-radius: 14px;
+      padding: 1.2rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tide-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+
+    .tide-bar-outer {
+      height: 14px;
+      background: rgba(0,0,0,0.3);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .tide-bar-inner {
+      height: 100%;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+      border-radius: 99px;
+      transition: width 0.8s ease;
+      width: 0%;
+    }
+
+    .tide-trend {
+      text-align: center;
+      font-size: 0.85rem;
+      margin-top: 0.6rem;
+      color: #94a3b8;
+    }
+
+    .tide-trend span { color: #38bdf8; font-weight: 600; }
+
+    /* Chart */
+    .chart-wrap {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(125,211,252,0.15);
+      border-radius: 14px;
+      padding: 1.2rem 1rem 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .chart-wrap h3 {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.8rem;
+      padding-left: 0.5rem;
+    }
+
+    #tide-canvas {
+      width: 100%;
+      height: 180px;
+      display: block;
+    }
+
+    /* Next tides table */
+    .next-tides {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(125,211,252,0.15);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .next-tides h3 {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      padding: 1rem 1.5rem 0.6rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    thead th {
+      padding: 0.5rem 1.5rem;
+      text-align: left;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: #64748b;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      transition: background 0.15s;
+    }
+
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+    tbody td {
+      padding: 0.7rem 1.5rem;
+      color: #cbd5e1;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.15rem 0.55rem;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .badge.high { background: rgba(14,165,233,0.2); color: #38bdf8; }
+    .badge.low  { background: rgba(148,163,184,0.15); color: #94a3b8; }
+
+    /* Loading / empty */
+    #loading {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    #data-section { display: none; }
+
+    .refresh-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .refresh-row .last-updated {
+      font-size: 0.75rem;
+      color: #475569;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #334155;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Singapore Tide Tracker</h1>
+  <p>Tanjong Pagar &mdash; Port of Singapore &nbsp;|&nbsp; 1&deg;15'N, 103&deg;50'E</p>
+</header>
+
+<div class="container">
+
+  <div id="setup-card">
+    <h2>WorldTides API Key</h2>
+    <p>
+      This app uses the free <strong>WorldTides</strong> API for real tide predictions.
+      Get a free key (100 requests/day) at
+      <a href="https://www.worldtides.info/developer" target="_blank">worldtides.info/developer</a>,
+      then paste it below.
+    </p>
+    <div class="api-row">
+      <input id="api-key-input" type="text" placeholder="Paste your API key here…" />
+      <button class="btn" id="load-btn" onclick="loadTides()">Load Tides</button>
+    </div>
+    <div id="status-msg"></div>
+  </div>
+
+  <div id="loading">Enter your API key above to load Singapore tide data.</div>
+
+  <div id="data-section">
+    <div class="refresh-row">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="btn" onclick="loadTides()" id="refresh-btn" style="font-size:0.78rem;padding:0.4rem 0.9rem;">&#8635; Refresh</button>
+    </div>
+
+    <div class="cards">
+      <div class="card highlight">
+        <div class="label">Current Height</div>
+        <div class="value" id="current-height">—</div>
+        <div class="sub">metres</div>
+      </div>
+      <div class="card">
+        <div class="label">Next High Tide</div>
+        <div class="value" id="next-high-val">—</div>
+        <div class="sub" id="next-high-time">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Next Low Tide</div>
+        <div class="value" id="next-low-val">—</div>
+        <div class="sub" id="next-low-time">—</div>
+      </div>
+      <div class="card">
+        <div class="label">Tidal Range</div>
+        <div class="value" id="tidal-range">—</div>
+        <div class="sub">metres today</div>
+      </div>
+    </div>
+
+    <div class="tide-bar-wrap">
+      <div class="tide-bar-label">
+        <span>Low</span>
+        <span>High</span>
+      </div>
+      <div class="tide-bar-outer">
+        <div class="tide-bar-inner" id="tide-bar"></div>
+      </div>
+      <div class="tide-trend" id="tide-trend">—</div>
+    </div>
+
+    <div class="chart-wrap">
+      <h3>24-hour tide curve (SGT)</h3>
+      <canvas id="tide-canvas"></canvas>
+    </div>
+
+    <div class="next-tides">
+      <h3>Upcoming Tides</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time (SGT)</th>
+            <th>Type</th>
+            <th>Height (m)</th>
+          </tr>
+        </thead>
+        <tbody id="tides-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Data from WorldTides API &nbsp;&bull;&nbsp; Times shown in Singapore Time (SGT, UTC+8)
+</footer>
+
+<script>
+  // Singapore coordinates (Tanjong Pagar)
+  const LAT = 1.264;
+  const LON = 103.837;
+  const SGT_OFFSET = 8 * 3600; // seconds
+
+  // Saved key
+  const KEY_STORAGE = 'sg_tide_api_key';
+  const savedKey = localStorage.getItem(KEY_STORAGE);
+  if (savedKey) {
+    document.getElementById('api-key-input').value = savedKey;
+  }
+
+  // State
+  let extremes = [];
+  let heights  = [];
+
+  function setStatus(msg, ok = false) {
+    const el = document.getElementById('status-msg');
+    el.textContent = msg;
+    el.className = ok ? 'ok' : '';
+  }
+
+  function sgtDate(unixSec) {
+    return new Date((unixSec + SGT_OFFSET) * 1000);
+  }
+
+  function formatTime(unixSec) {
+    const d = sgtDate(unixSec);
+    return d.toISOString().slice(11, 16);
+  }
+
+  function formatDateShort(unixSec) {
+    const d = sgtDate(unixSec);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function loadTides() {
+    const key = document.getElementById('api-key-input').value.trim();
+    if (!key) { setStatus('Please enter an API key.'); return; }
+
+    localStorage.setItem(KEY_STORAGE, key);
+    document.getElementById('load-btn').disabled = true;
+    setStatus('Loading…');
+
+    const nowUnix = Math.floor(Date.now() / 1000);
+    const endUnix = nowUnix + 48 * 3600;
+
+    const url = `https://www.worldtides.info/api/v3?heights&extremes`
+      + `&lat=${LAT}&lon=${LON}`
+      + `&start=${nowUnix}&length=${48 * 3600}`
+      + `&step=900`
+      + `&key=${encodeURIComponent(key)}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+
+      if (data.status && data.status !== 200) {
+        setStatus(`API error: ${data.error || data.status}`);
+        document.getElementById('load-btn').disabled = false;
+        return;
+      }
+
+      extremes = data.extremes || [];
+      heights  = data.heights  || [];
+
+      if (!heights.length) {
+        setStatus('No data returned. Check your API key and try again.');
+        document.getElementById('load-btn').disabled = false;
+        return;
+      }
+
+      setStatus('Data loaded successfully.', true);
+      document.getElementById('load-btn').disabled = false;
+      document.getElementById('last-updated').textContent =
+        'Updated: ' + new Date().toLocaleTimeString('en-SG', { timeZone: 'Asia/Singapore' }) + ' SGT';
+
+      renderAll(nowUnix);
+
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('data-section').style.display = 'block';
+
+    } catch (e) {
+      setStatus('Network error. Check your connection or API key.');
+      document.getElementById('load-btn').disabled = false;
+    }
+  }
+
+  function renderAll(nowUnix) {
+    renderCards(nowUnix);
+    renderBar(nowUnix);
+    renderChart(nowUnix);
+    renderTable();
+  }
+
+  function interpolateHeight(nowUnix) {
+    if (!heights.length) return null;
+    for (let i = 1; i < heights.length; i++) {
+      if (heights[i].dt >= nowUnix) {
+        const prev = heights[i - 1];
+        const curr = heights[i];
+        const t = (nowUnix - prev.dt) / (curr.dt - prev.dt);
+        return prev.height + t * (curr.height - prev.height);
+      }
+    }
+    return heights[heights.length - 1].height;
+  }
+
+  function renderCards(nowUnix) {
+    const h = interpolateHeight(nowUnix);
+    if (h !== null) {
+      document.getElementById('current-height').textContent = h.toFixed(2);
+    }
+
+    const futureExtremes = extremes.filter(e => e.dt >= nowUnix);
+    const nextHigh = futureExtremes.find(e => e.type === 'High');
+    const nextLow  = futureExtremes.find(e => e.type === 'Low');
+
+    if (nextHigh) {
+      document.getElementById('next-high-val').textContent  = nextHigh.height.toFixed(2) + 'm';
+      document.getElementById('next-high-time').textContent = formatTime(nextHigh.dt) + ' SGT';
+    }
+    if (nextLow) {
+      document.getElementById('next-low-val').textContent  = nextLow.height.toFixed(2) + 'm';
+      document.getElementById('next-low-time').textContent = formatTime(nextLow.dt) + ' SGT';
+    }
+
+    // Tidal range for today (all extremes within 24h)
+    const todayExtremes = extremes.filter(e => e.dt >= nowUnix && e.dt < nowUnix + 86400);
+    if (todayExtremes.length >= 2) {
+      const hs = todayExtremes.map(e => e.height);
+      const range = (Math.max(...hs) - Math.min(...hs)).toFixed(2);
+      document.getElementById('tidal-range').textContent = range;
+    }
+  }
+
+  function renderBar(nowUnix) {
+    const allH = heights.map(p => p.height);
+    const minH = Math.min(...allH);
+    const maxH = Math.max(...allH);
+    const currH = interpolateHeight(nowUnix);
+
+    const pct = ((currH - minH) / (maxH - minH)) * 100;
+    document.getElementById('tide-bar').style.width = Math.max(2, pct).toFixed(1) + '%';
+
+    // Trend: compare now vs 30 min ago
+    const h30ago = interpolateHeight(nowUnix - 1800);
+    const diff = currH - h30ago;
+    const trendEl = document.getElementById('tide-trend');
+    if (Math.abs(diff) < 0.01) {
+      trendEl.innerHTML = 'Tide is <span>holding steady</span>';
+    } else if (diff > 0) {
+      trendEl.innerHTML = `Tide is <span>rising</span> &nbsp;&#8593; ${Math.abs(diff).toFixed(2)}m in the last 30 min`;
+    } else {
+      trendEl.innerHTML = `Tide is <span>falling</span> &nbsp;&#8595; ${Math.abs(diff).toFixed(2)}m in the last 30 min`;
+    }
+  }
+
+  function renderChart(nowUnix) {
+    const canvas = document.getElementById('tide-canvas');
+    const dpr = window.devicePixelRatio || 1;
+    const W = canvas.offsetWidth;
+    const H = canvas.offsetHeight;
+    canvas.width  = W * dpr;
+    canvas.height = H * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    // Filter heights for 24h window
+    const endUnix = nowUnix + 24 * 3600;
+    const pts = heights.filter(p => p.dt >= nowUnix - 3600 && p.dt <= endUnix + 3600);
+
+    if (!pts.length) return;
+
+    const minH = Math.min(...pts.map(p => p.height));
+    const maxH = Math.max(...pts.map(p => p.height));
+    const pad  = { top: 12, bottom: 28, left: 36, right: 12 };
+    const cw   = W - pad.left - pad.right;
+    const ch   = H - pad.top - pad.bottom;
+
+    const tMin = pts[0].dt;
+    const tMax = pts[pts.length - 1].dt;
+
+    function tx(t) { return pad.left + ((t - tMin) / (tMax - tMin)) * cw; }
+    function ty(h) { return pad.top  + (1 - (h - minH) / (maxH - minH)) * ch; }
+
+    // Gradient fill
+    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
+    grad.addColorStop(0, 'rgba(14,165,233,0.35)');
+    grad.addColorStop(1, 'rgba(14,165,233,0.01)');
+
+    ctx.beginPath();
+    ctx.moveTo(tx(pts[0].dt), ty(pts[0].height));
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cpx = (tx(prev.dt) + tx(curr.dt)) / 2;
+      ctx.bezierCurveTo(cpx, ty(prev.height), cpx, ty(curr.height), tx(curr.dt), ty(curr.height));
+    }
+    ctx.lineTo(tx(pts[pts.length - 1].dt), pad.top + ch);
+    ctx.lineTo(tx(pts[0].dt), pad.top + ch);
+    ctx.closePath();
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(tx(pts[0].dt), ty(pts[0].height));
+    for (let i = 1; i < pts.length; i++) {
+      const prev = pts[i - 1];
+      const curr = pts[i];
+      const cpx = (tx(prev.dt) + tx(curr.dt)) / 2;
+      ctx.bezierCurveTo(cpx, ty(prev.height), cpx, ty(curr.height), tx(curr.dt), ty(curr.height));
+    }
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Now marker
+    const nx = tx(nowUnix);
+    ctx.beginPath();
+    ctx.moveTo(nx, pad.top);
+    ctx.lineTo(nx, pad.top + ch);
+    ctx.strokeStyle = 'rgba(251,191,36,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = 'rgba(251,191,36,0.9)';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('now', nx, pad.top - 2);
+
+    // Extremes dots
+    const chartExtremes = extremes.filter(e => e.dt >= tMin && e.dt <= tMax);
+    for (const e of chartExtremes) {
+      const cx2 = tx(e.dt);
+      const cy2 = ty(e.height);
+      ctx.beginPath();
+      ctx.arc(cx2, cy2, 4, 0, Math.PI * 2);
+      ctx.fillStyle = e.type === 'High' ? '#38bdf8' : '#94a3b8';
+      ctx.fill();
+      ctx.fillStyle = e.type === 'High' ? '#e0f8ff' : '#cbd5e1';
+      ctx.font = '10px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(e.height.toFixed(1) + 'm', cx2, e.type === 'High' ? cy2 - 8 : cy2 + 16);
+    }
+
+    // Y-axis labels
+    ctx.fillStyle = '#475569';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+      const h = minH + (i / steps) * (maxH - minH);
+      const y = ty(h);
+      ctx.fillText(h.toFixed(1), pad.left - 4, y + 3);
+    }
+
+    // X-axis time labels (every 6 hours)
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#475569';
+    for (let t = nowUnix; t <= endUnix; t += 6 * 3600) {
+      const x = tx(t);
+      ctx.fillText(formatTime(t), x, pad.top + ch + 16);
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tides-tbody');
+    tbody.innerHTML = '';
+    const next12 = extremes.slice(0, 12);
+    for (const e of next12) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${formatDateShort(e.dt)}</td>
+        <td>${formatTime(e.dt)}</td>
+        <td><span class="badge ${e.type === 'High' ? 'high' : 'low'}">${e.type}</span></td>
+        <td>${e.height.toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  // Re-render chart on resize
+  window.addEventListener('resize', () => {
+    if (heights.length) {
+      const nowUnix = Math.floor(Date.now() / 1000);
+      renderChart(nowUnix);
+    }
+  });
+</script>
+
+</body>
+</html>
