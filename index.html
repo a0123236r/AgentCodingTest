@@ -5,113 +5,160 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Singapore Tide Tracker</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(160deg, #0a1628 0%, #0d2b4e 50%, #0a3d5c 100%);
-      min-height: 100vh;
-      color: #e0f0ff;
+    :root {
+      --deep:    #03314b;
+      --mid:     #064e71;
+      --surface: #0a7ea4;
+      --foam:    #63d6e8;
+      --seafoam: #a8edea;
+      --sand:    #f5e6c8;
+      --coral:   #ff8c69;
+      --text:    #dff6fb;
+      --muted:   #7ecbd9;
+      --panel:   rgba(3, 49, 75, 0.55);
+      --border:  rgba(99, 214, 232, 0.18);
     }
 
-    header {
-      text-align: center;
-      padding: 2rem 1rem 1rem;
+    body {
+      font-family: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(180deg, #011d2e 0%, #03314b 35%, #054f70 70%, #0a7ea4 100%);
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
     }
+
+    /* ── Animated wave header ── */
+    header {
+      position: relative;
+      text-align: center;
+      padding: 2.8rem 1rem 5rem;
+      overflow: hidden;
+    }
+
+    header .header-inner { position: relative; z-index: 2; }
 
     header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      color: #7dd3fc;
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--seafoam);
+      text-shadow: 0 0 30px rgba(99,214,232,0.5);
     }
 
+    header .emoji { font-size: 1.6rem; vertical-align: middle; margin-right: 0.4rem; }
+
     header p {
-      color: #94a3b8;
-      font-size: 0.9rem;
-      margin-top: 0.3rem;
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-top: 0.4rem;
+      letter-spacing: 0.03em;
+    }
+
+    /* SVG waves */
+    .waves {
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 100%; height: 70px;
+      z-index: 1;
+    }
+
+    .wave { animation: wave-move linear infinite; transform-origin: left center; }
+    .wave1 { animation-duration: 7s;  fill: rgba(10,126,164,0.45); }
+    .wave2 { animation-duration: 11s; fill: rgba(6,78,113,0.55); animation-direction: reverse; }
+    .wave3 { animation-duration: 9s;  fill: rgba(3,49,75,0.7); }
+
+    @keyframes wave-move {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
 
     .container {
-      max-width: 860px;
+      max-width: 880px;
       margin: 0 auto;
-      padding: 1rem 1.5rem 3rem;
+      padding: 0 1.5rem 4rem;
     }
 
-    /* API key setup */
+    /* ── Panels ── */
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    /* ── API key setup ── */
     #setup-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(125,211,252,0.2);
-      border-radius: 14px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
     }
 
     #setup-card h2 {
       font-size: 1rem;
-      color: #7dd3fc;
-      margin-bottom: 0.6rem;
+      font-weight: 700;
+      color: var(--seafoam);
+      margin-bottom: 0.5rem;
     }
 
     #setup-card p {
       font-size: 0.82rem;
-      color: #94a3b8;
+      color: var(--muted);
       margin-bottom: 0.8rem;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
-    #setup-card p a {
-      color: #38bdf8;
-    }
+    #setup-card p a { color: var(--foam); }
 
-    .api-row {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-    }
+    .api-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
     #api-key-input {
       flex: 1;
       min-width: 200px;
-      padding: 0.55rem 0.9rem;
-      border-radius: 8px;
-      border: 1px solid rgba(125,211,252,0.3);
-      background: rgba(0,0,0,0.3);
-      color: #e0f0ff;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
       font-size: 0.9rem;
+      font-family: inherit;
       outline: none;
+      transition: border-color 0.2s;
     }
 
-    #api-key-input:focus {
-      border-color: #38bdf8;
-    }
+    #api-key-input:focus { border-color: var(--foam); }
 
     .btn {
-      padding: 0.55rem 1.2rem;
-      border-radius: 8px;
+      padding: 0.55rem 1.3rem;
+      border-radius: 10px;
       border: none;
-      background: #0284c7;
+      background: linear-gradient(135deg, var(--surface), #05799e);
       color: white;
       font-size: 0.9rem;
+      font-family: inherit;
+      font-weight: 700;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: filter 0.2s, transform 0.1s;
       white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(10,126,164,0.4);
     }
 
-    .btn:hover { background: #0369a1; }
-    .btn:disabled { background: #334155; cursor: not-allowed; }
+    .btn:hover  { filter: brightness(1.15); transform: translateY(-1px); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { background: #1e3a4a; box-shadow: none; cursor: not-allowed; }
 
-    /* Status */
     #status-msg {
       font-size: 0.82rem;
       margin-top: 0.5rem;
       min-height: 1.1em;
-      color: #f87171;
+      color: var(--coral);
     }
+    #status-msg.ok { color: #5eead4; }
 
-    #status-msg.ok { color: #4ade80; }
-
-    /* Cards row */
+    /* ── Cards ── */
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -120,161 +167,170 @@
     }
 
     .card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(125,211,252,0.15);
-      border-radius: 14px;
-      padding: 1.2rem 1rem;
+      padding: 1.3rem 1rem;
       text-align: center;
+      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      transition: transform 0.2s;
     }
 
+    .card:hover { transform: translateY(-2px); }
+
     .card .label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       text-transform: uppercase;
-      letter-spacing: 0.08em;
-      color: #64748b;
-      margin-bottom: 0.4rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.45rem;
     }
 
     .card .value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #7dd3fc;
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--seafoam);
       line-height: 1;
     }
 
     .card .sub {
-      font-size: 0.78rem;
-      color: #94a3b8;
-      margin-top: 0.3rem;
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 0.35rem;
     }
 
     .card.highlight {
-      border-color: rgba(125,211,252,0.4);
-      background: rgba(2,132,199,0.12);
+      border-color: rgba(99,214,232,0.45);
+      background: rgba(10,126,164,0.2);
+      box-shadow: 0 0 24px rgba(99,214,232,0.12), inset 0 0 20px rgba(99,214,232,0.05);
     }
 
-    /* Tide bar */
+    .card.highlight .value { color: #fff; text-shadow: 0 0 16px rgba(99,214,232,0.7); }
+
+    /* ── Tide bar ── */
     .tide-bar-wrap {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(125,211,252,0.15);
-      border-radius: 14px;
-      padding: 1.2rem 1.5rem;
+      padding: 1.3rem 1.5rem;
       margin-bottom: 1.5rem;
     }
 
     .tide-bar-label {
       display: flex;
       justify-content: space-between;
-      font-size: 0.75rem;
-      color: #64748b;
-      margin-bottom: 0.5rem;
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
     }
 
     .tide-bar-outer {
-      height: 14px;
-      background: rgba(0,0,0,0.3);
+      height: 16px;
+      background: rgba(0,0,0,0.35);
       border-radius: 99px;
       overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
     }
 
     .tide-bar-inner {
       height: 100%;
-      background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+      background: linear-gradient(90deg, #0369a1, #22d3ee, #a5f3fc);
       border-radius: 99px;
-      transition: width 0.8s ease;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
       width: 0%;
+      box-shadow: 0 0 10px rgba(34,211,238,0.5);
     }
 
     .tide-trend {
       text-align: center;
       font-size: 0.85rem;
-      margin-top: 0.6rem;
-      color: #94a3b8;
+      margin-top: 0.7rem;
+      color: var(--muted);
     }
 
-    .tide-trend span { color: #38bdf8; font-weight: 600; }
+    .tide-trend span { color: var(--foam); font-weight: 700; }
 
-    /* Chart */
+    /* ── Chart ── */
     .chart-wrap {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(125,211,252,0.15);
-      border-radius: 14px;
-      padding: 1.2rem 1rem 0.5rem;
+      padding: 1.3rem 1rem 0.7rem;
       margin-bottom: 1.5rem;
     }
 
     .chart-wrap h3 {
-      font-size: 0.85rem;
-      color: #94a3b8;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
       margin-bottom: 0.8rem;
       padding-left: 0.5rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     #tide-canvas {
       width: 100%;
-      height: 180px;
+      height: 190px;
       display: block;
     }
 
-    /* Next tides table */
+    /* ── Table ── */
     .next-tides {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(125,211,252,0.15);
-      border-radius: 14px;
       overflow: hidden;
     }
 
     .next-tides h3 {
-      font-size: 0.85rem;
-      color: #94a3b8;
-      padding: 1rem 1.5rem 0.6rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 1.1rem 1.5rem 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.88rem;
+      font-size: 0.87rem;
     }
 
     thead th {
       padding: 0.5rem 1.5rem;
       text-align: left;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
       text-transform: uppercase;
-      letter-spacing: 0.07em;
-      color: #64748b;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      letter-spacing: 0.08em;
+      color: #4a8fa0;
+      border-bottom: 1px solid var(--border);
+      font-weight: 700;
     }
 
     tbody tr {
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(99,214,232,0.06);
       transition: background 0.15s;
     }
 
     tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    tbody tr:hover { background: rgba(99,214,232,0.05); }
 
     tbody td {
-      padding: 0.7rem 1.5rem;
-      color: #cbd5e1;
+      padding: 0.72rem 1.5rem;
+      color: #b0dde8;
     }
 
     .badge {
       display: inline-block;
-      padding: 0.15rem 0.55rem;
+      padding: 0.18rem 0.6rem;
       border-radius: 99px;
-      font-size: 0.72rem;
-      font-weight: 600;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
     }
 
-    .badge.high { background: rgba(14,165,233,0.2); color: #38bdf8; }
-    .badge.low  { background: rgba(148,163,184,0.15); color: #94a3b8; }
+    .badge.high { background: rgba(34,211,238,0.18); color: #67e8f9; border: 1px solid rgba(34,211,238,0.3); }
+    .badge.low  { background: rgba(100,116,139,0.2);  color: #90b8c4; border: 1px solid rgba(100,116,139,0.3); }
 
-    /* Loading / empty */
+    /* ── Misc ── */
     #loading {
       text-align: center;
       padding: 3rem;
-      color: #64748b;
+      color: var(--muted);
       font-size: 0.9rem;
     }
 
@@ -288,28 +344,68 @@
     }
 
     .refresh-row .last-updated {
-      font-size: 0.75rem;
-      color: #475569;
+      font-size: 0.74rem;
+      color: #3a7a8c;
+    }
+
+    /* Floating bubbles */
+    .bubbles {
+      position: fixed;
+      bottom: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      bottom: -60px;
+      border-radius: 50%;
+      background: rgba(99,214,232,0.07);
+      border: 1px solid rgba(99,214,232,0.12);
+      animation: rise linear infinite;
+    }
+
+    @keyframes rise {
+      0%   { transform: translateY(0) scale(1);   opacity: 0.6; }
+      100% { transform: translateY(-110vh) scale(1.2); opacity: 0; }
     }
 
     footer {
       text-align: center;
-      font-size: 0.75rem;
-      color: #334155;
+      font-size: 0.74rem;
+      color: #2a5a6a;
       padding: 1rem;
+      position: relative;
+      z-index: 1;
     }
   </style>
 </head>
 <body>
 
+<!-- Floating bubbles -->
+<div class="bubbles" id="bubbles"></div>
+
 <header>
-  <h1>Singapore Tide Tracker</h1>
-  <p>Tanjong Pagar &mdash; Port of Singapore &nbsp;|&nbsp; 1&deg;15'N, 103&deg;50'E</p>
+  <div class="header-inner">
+    <h1><span class="emoji">🌊</span>Singapore Tide Tracker</h1>
+    <p>Tanjong Pagar &mdash; Port of Singapore &nbsp;&bull;&nbsp; 1&deg;15'N, 103&deg;50'E</p>
+  </div>
+  <!-- Animated waves -->
+  <svg class="waves" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 70" preserveAspectRatio="none">
+    <path class="wave wave1" d="M0,35 C180,60 360,10 540,35 C720,60 900,10 1080,35 C1260,60 1350,20 1440,35 L1440,70 L0,70 Z
+                                M1440,35 C1260,60 1080,10 900,35 C720,60 540,10 360,35 C180,60 90,20 0,35 L0,70 L1440,70 Z"/>
+    <path class="wave wave2" d="M0,40 C200,15 400,60 600,40 C800,15 1000,60 1200,40 C1320,25 1380,50 1440,40 L1440,70 L0,70 Z
+                                M1440,40 C1240,15 1040,60 840,40 C640,15 440,60 240,40 C120,25 60,50 0,40 L0,70 L1440,70 Z"/>
+    <path class="wave wave3" d="M0,45 C240,20 480,65 720,45 C960,20 1200,65 1440,45 L1440,70 L0,70 Z
+                                M1440,45 C1200,20 960,65 720,45 C480,20 240,65 0,45 L0,70 L1440,70 Z"/>
+  </svg>
 </header>
 
-<div class="container">
+<div class="container" style="position:relative;z-index:1;">
 
-  <div id="setup-card">
+  <div id="setup-card" class="panel">
     <h2>WorldTides API Key</h2>
     <p>
       This app uses the free <strong>WorldTides</strong> API for real tide predictions.
@@ -355,7 +451,7 @@
       </div>
     </div>
 
-    <div class="tide-bar-wrap">
+    <div class="tide-bar-wrap panel">
       <div class="tide-bar-label">
         <span>Low</span>
         <span>High</span>
@@ -366,12 +462,12 @@
       <div class="tide-trend" id="tide-trend">—</div>
     </div>
 
-    <div class="chart-wrap">
+    <div class="chart-wrap panel">
       <h3>24-hour tide curve (SGT)</h3>
       <canvas id="tide-canvas"></canvas>
     </div>
 
-    <div class="next-tides">
+    <div class="next-tides panel">
       <h3>Upcoming Tides</h3>
       <table>
         <thead>
@@ -582,8 +678,9 @@
 
     // Gradient fill
     const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + ch);
-    grad.addColorStop(0, 'rgba(14,165,233,0.35)');
-    grad.addColorStop(1, 'rgba(14,165,233,0.01)');
+    grad.addColorStop(0, 'rgba(34,211,238,0.45)');
+    grad.addColorStop(0.5, 'rgba(10,126,164,0.25)');
+    grad.addColorStop(1, 'rgba(3,49,75,0.05)');
 
     ctx.beginPath();
     ctx.moveTo(tx(pts[0].dt), ty(pts[0].height));
@@ -608,8 +705,8 @@
       const cpx = (tx(prev.dt) + tx(curr.dt)) / 2;
       ctx.bezierCurveTo(cpx, ty(prev.height), cpx, ty(curr.height), tx(curr.dt), ty(curr.height));
     }
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#22d3ee';
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     // Now marker
@@ -635,16 +732,16 @@
       const cy2 = ty(e.height);
       ctx.beginPath();
       ctx.arc(cx2, cy2, 4, 0, Math.PI * 2);
-      ctx.fillStyle = e.type === 'High' ? '#38bdf8' : '#94a3b8';
+      ctx.fillStyle = e.type === 'High' ? '#22d3ee' : '#7ecbd9';
       ctx.fill();
-      ctx.fillStyle = e.type === 'High' ? '#e0f8ff' : '#cbd5e1';
+      ctx.fillStyle = e.type === 'High' ? '#a5f3fc' : '#90b8c4';
       ctx.font = '10px system-ui';
       ctx.textAlign = 'center';
       ctx.fillText(e.height.toFixed(1) + 'm', cx2, e.type === 'High' ? cy2 - 8 : cy2 + 16);
     }
 
     // Y-axis labels
-    ctx.fillStyle = '#475569';
+    ctx.fillStyle = '#4a8fa0';
     ctx.font = '10px system-ui';
     ctx.textAlign = 'right';
     const steps = 4;
@@ -656,7 +753,7 @@
 
     // X-axis time labels (every 6 hours)
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#475569';
+    ctx.fillStyle = '#4a8fa0';
     for (let t = nowUnix; t <= endUnix; t += 6 * 3600) {
       const x = tx(t);
       ctx.fillText(formatTime(t), x, pad.top + ch + 16);
@@ -686,6 +783,24 @@
       renderChart(nowUnix);
     }
   });
+
+  // Floating bubbles
+  (function spawnBubbles() {
+    const container = document.getElementById('bubbles');
+    function makeBubble() {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      const size = 10 + Math.random() * 40;
+      const left = Math.random() * 100;
+      const dur  = 12 + Math.random() * 18;
+      const delay = Math.random() * 10;
+      b.style.cssText = `width:${size}px;height:${size}px;left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s`;
+      container.appendChild(b);
+      setTimeout(() => b.remove(), (dur + delay) * 1000);
+    }
+    for (let i = 0; i < 12; i++) makeBubble();
+    setInterval(makeBubble, 2500);
+  })();
 </script>
 
 </body>
